@@ -14,6 +14,8 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
     lightingGood: false,
   });
 
+  console.log(status);
+
   useEffect(() => {
     if (!videoRef.current) return;
     const videoElement = videoRef.current;
@@ -33,6 +35,24 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
     });
 
     faceMesh.onResults((results) => {
+      if (!videoElement.videoWidth || !videoElement.videoHeight) return;
+      const videoWidth = videoElement.videoWidth;
+      const videoHeight = videoElement.videoHeight;
+
+      // Container dimensions.
+      const containerWidth = windowWidth;
+      const containerHeight = windowHeight;
+
+      const scale = Math.max(containerWidth / videoWidth, containerHeight / videoHeight);
+      const displayWidth = videoWidth * scale;
+      const displayHeight = videoHeight * scale;
+
+      const offsetX = (containerWidth - displayWidth) / 2;
+      const offsetY = (containerHeight - displayHeight) / 2;
+
+      const scaleFactorX = (videoWidth * scale) / containerWidth;
+      const scaleFactorY = (videoHeight * scale) / containerHeight;
+
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
@@ -46,62 +66,56 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
         faceDetected = true;
         const landmarks = results.multiFaceLandmarks[0];
 
+        canvasCtx.save();
+        canvasCtx.setTransform(
+          scaleFactorX,
+          0,
+          0,
+          scaleFactorY,
+          offsetX,
+          offsetY
+        );
+
         drawConnectors(
           canvasCtx,
           landmarks,
           FACEMESH_TESSELATION,
           { color: '#000000', lineWidth: 1, fillColor: '#000000' }
         );
+        canvasCtx.restore();
 
-        let minX = Infinity,
-          minY = Infinity,
-          maxX = -Infinity,
-          maxY = -Infinity;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         landmarks.forEach((landmark) => {
-          const x = landmark.x * canvasElement.width;
-          const y = landmark.y * canvasElement.height;
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-          if (x > maxX) maxX = x;
-          if (y > maxY) maxY = y;
+          if (landmark.x < minX) minX = landmark.x;
+          if (landmark.y < minY) minY = landmark.y;
+          if (landmark.x > maxX) maxX = landmark.x;
+          if (landmark.y > maxY) maxY = landmark.y;
         });
-
         const faceCenterX = (minX + maxX) / 2;
         const faceCenterY = (minY + maxY) / 2;
-
-        const frameCenterX = canvasElement.width / 2;
-        const frameCenterY = canvasElement.height / 2;
-
-        const thresholdX = canvasElement.width * 0.1;
-        const thresholdY = canvasElement.height * 0.1;
-
-        if (
-          Math.abs(faceCenterX - frameCenterX) < thresholdX &&
-          Math.abs(faceCenterY - frameCenterY) < thresholdY
-        ) {
-          faceCentered = true;
-        }
+        const threshold = 0.1;
+        faceCentered =
+          Math.abs(faceCenterX - 0.5) < threshold &&
+          Math.abs(faceCenterY - 0.5) < threshold;
       }
-
       canvasCtx.restore();
 
       const offscreenCanvas = document.createElement('canvas');
-      offscreenCanvas.width = videoElement.videoWidth;
-      offscreenCanvas.height = videoElement.videoHeight;
+      offscreenCanvas.width = videoWidth;
+      offscreenCanvas.height = videoHeight;
       const offscreenCtx = offscreenCanvas.getContext('2d');
       offscreenCtx.drawImage(
         videoElement,
         0,
         0,
-        offscreenCanvas.width,
-        offscreenCanvas.height
+        videoWidth,
+        videoHeight
       );
-
       const imageData = offscreenCtx.getImageData(
         0,
         0,
-        offscreenCanvas.width,
-        offscreenCanvas.height
+        videoWidth,
+        videoHeight
       );
       const data = imageData.data;
       let totalBrightness = 0;
@@ -132,7 +146,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
     return () => {
       camera.stop();
     };
-  }, []);
+  }, [windowWidth, windowHeight]);
 
   return (
     <div style={{ position: 'relative', width: windowWidth, height: windowHeight }}>
@@ -144,7 +158,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
           left: 0,
           width: windowWidth,
           height: windowHeight,
-          objectFit: 'contain',
+          objectFit: 'cover',
         }}
         autoPlay
         playsInline
@@ -155,30 +169,6 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
         height={windowHeight}
         style={{ position: 'absolute', top: 0, left: 0 }}
       ></canvas>
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 10,
-          left: 10,
-          background: 'rgba(0,0,0,0.5)',
-          color: 'white',
-          padding: '5px',
-          borderRadius: '4px',
-        }}
-      >
-        <p>
-          <strong>Face Detected:</strong>{' '}
-          {status.faceDetected ? 'Yes' : 'No'}
-        </p>
-        <p>
-          <strong>Face Centered:</strong>{' '}
-          {status.faceCentered ? 'Yes' : 'No'}
-        </p>
-        <p>
-          <strong>Good Lighting:</strong>{' '}
-          {status.lightingGood ? 'Yes' : 'No'}
-        </p>
-      </div>
     </div>
   );
 };
