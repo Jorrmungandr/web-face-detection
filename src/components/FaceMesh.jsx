@@ -92,6 +92,8 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
       offscreenCanvas.height = videoHeight;
       const offscreenCtx = offscreenCanvas.getContext('2d');
       offscreenCtx.drawImage(videoElement, 0, 0, videoWidth, videoHeight);
+
+      const base64Image = offscreenCanvas.toDataURL('image/png');
       const imageData = offscreenCtx.getImageData(0, 0, videoWidth, videoHeight);
       const data = imageData.data;
       let totalBrightness = 0;
@@ -109,6 +111,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
                 lighting: lightingGood,
                 position: faceCentered,
                 faceFound: faceDetected,
+                image: base64Image,
             })
         );
       }
