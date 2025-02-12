@@ -33,7 +33,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
       const containerWidth = windowWidth;
       const containerHeight = windowHeight;
 
-      const scale = Math.max(containerWidth / videoWidth, containerHeight / videoHeight);
+      const scale = Math.min(containerWidth / videoWidth, containerHeight / videoHeight);
       const displayWidth = videoWidth * scale;
       const displayHeight = videoHeight * scale;
 
