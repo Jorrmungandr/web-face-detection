@@ -121,8 +121,8 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
       onFrame: async () => {
         await faceMesh.send({ image: videoElement });
       },
-      width: windowWidth,
-      height: windowHeight,
+      // width: windowWidth,
+      // height: windowHeight,
     });
     camera.start();
 
