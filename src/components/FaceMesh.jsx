@@ -145,6 +145,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
           position: 'absolute',
           top: 0,
           left: 0,
+          width: '100vw',
           height: '100vh',
           objectFit: 'contain',
         }}
