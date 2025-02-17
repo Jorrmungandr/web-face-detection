@@ -67,7 +67,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
           canvasCtx,
           landmarks,
           FACEMESH_TESSELATION,
-          { color: '#FCC000', lineWidth: 1, fillColor: '#FCC000' }
+          { color: 'yellow', lineWidth: 1, fillColor: 'yellow' }
         );
         canvasCtx.restore();
 
