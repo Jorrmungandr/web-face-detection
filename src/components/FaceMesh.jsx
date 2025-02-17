@@ -137,6 +137,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
         position: 'relative',
         width: windowWidth,
         height: windowHeight,
+        backgroundColor: '#F2D668'
       }}
     >
       <video
