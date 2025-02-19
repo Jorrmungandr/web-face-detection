@@ -111,7 +111,7 @@ export const FaceMeshMirror = ({ windowWidth, windowHeight }) => {
                 lighting: lightingGood,
                 position: faceCentered,
                 faceFound: faceDetected,
-                image: `data:image/png;base64,${base64Image}`,
+                image: base64Image,
             })
         );
       }
